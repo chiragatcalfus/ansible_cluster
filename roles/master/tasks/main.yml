@@ -484,3 +484,15 @@
 
 - name: Restart CoreDNS deployment
   shell: kubectl rollout restart deployment coredns -n kube-system
+
+- name: Create ClusterRoleBinding for CoreDNS
+  shell: |
+    kubectl create clusterrolebinding coredns \
+      --clusterrole=system:coredns \
+      --serviceaccount=kube-system:coredns
+  register: coredns_bind
+  failed_when: coredns_bind.rc != 0 and 'AlreadyExists' not in coredns_bind.stderr
+  changed_when: "'Created' in coredns_bind.stdout"
+
+- name: Restart CoreDNS deployment
+  shell: kubectl rollout restart deployment coredns -n kube-system
